@@ -1,6 +1,4 @@
-from interface import Repositorio, RepositorioJuego
-import datetime
-
+from interfaces import Repositorio
 class App:
     def __init__(self, repositorio):
         self.repositorio = repositorio
