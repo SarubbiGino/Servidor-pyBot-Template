@@ -1,4 +1,4 @@
-from interfaces import Repositorio
+from interfaces import repositorio
 class App:
     def __init__(self, repositorio):
         self.repositorio = repositorio

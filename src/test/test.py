@@ -1,7 +1,6 @@
+from interfaces.interfaces import RepositorioFake
+from app.app import App
 import datetime
-from interface import Repositorio, RepositorioFake
-from app import App
-
 
 repositorio = RepositorioFake()
 nombre = 'Amigo Invisible'
