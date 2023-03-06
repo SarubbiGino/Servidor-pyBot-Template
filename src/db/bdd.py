@@ -1,56 +1,55 @@
-import pymongo
 from pymongo import MongoClient
 from interfaces.interfaces import Juego, Repositorio
-import datetime
+from datetime import date
 
-#Crear base de datos
-miCliente = pymongo.MongoClient("mongodb://localhost:27017/")
-   
-miDataBase = miCliente["BaseDeDatos"]
-
-#Crear Coleccion de Participantes
-Participantes = miDataBase["Participantes"]
-
-#Crear Coleccion de Juegos
-MisJuegos = miDataBase["Juegos"]
-#Insertar registro en la coleccion
-#Lista = { "id": 1,
- #           "nombreDeUsuario": "Suarezzz#7013",
-  #          "ListaDeRegalo": "Remeras, Pantalones",
-   #         "Compañero": 2,
-    #        "Puntos acumulados por adivinar regalos": "192",
-     #       "Puede ver la lista de su compañero": True}
-
-#x = miColeccion.insert_one(Lista)
-
-#Mostrar los Nombres de Usuarios
-#for mostrar in miColeccion.find():
-#    print(mostrar["nombreDeUsuario"])
-
-#Mostrar todo
-#resultados = miColeccion.find()
-#for resultado in resultados:
-#    print(resultado["nombreDeUsuario"]+" "+resultado["ListaDeRegalo"]+" "+str(resultado["Compañero"])+" "+resultado["Puntos acumulados por adivinar regalos"])
 
 class DBMongo(Repositorio):
-    def guardarUnParticipante(self, nombreDeUsuario: str, puntosAcumuladosParaAdivinarListaDeRegalos: int, puedeVerListaDeRegalos: bool):
-        Lista = {
-            "Nombre De Usuario": nombreDeUsuario,
-            "Puntos acumulados por adivinar regalos": puntosAcumuladosParaAdivinarListaDeRegalos,
-            "Puede ver la lista de su compañero": puedeVerListaDeRegalos}
-        
-        x = Participantes.insert_one(Lista)
-    def almacenarJuego(self, juego: str, fecha_de_inicio: datetime, fecha_de_publicacion: datetime, fecha_de_vencimiento: datetime):
-        Lista = {
-            "Nombre Del Juego": juego,
-            "Fecha de Inicio": fecha_de_inicio,
-            "Fecha de Publicaciion": fecha_de_publicacion,
-            "Fecha de Vencimiento": fecha_de_vencimiento}
+    def __init__(self) -> None:
+        self.client_mongo = MongoClient("mongodb://localhost:27017/")
+        self.db = self.client_mongo["BaseDeDatos"]
 
-        x = MisJuegos.insert_one(Lista)
-  
-    def dameElJuego(self, id: int) -> Juego:
-        for mostrar in MisJuegos.find():
-            print(mostrar["Nombre Del Juego"]+" "+mostrar["Fecha de Inicio"]+" "+mostrar["Fecha de Publicaciion"]+" "+mostrar["Fecha de Vencimiento"])
-   
-    
+    def guardar_juego(
+            self,
+            fecha_limite_para_admitir_participantes: date,
+            fecha_de_inicio_del_juego: date,
+            fecha_de_celebracion_del_juego: date):
+        juegos = self.db['MisJuegos']
+        juegos.insert_one(document={
+            "fechaLimiteParaAdmitirParticipantes": fecha_limite_para_admitir_participantes,
+            "fechaDeInicioDelJuego": fecha_de_inicio_del_juego,
+            "fechaDeCelebracionDelJuego": fecha_de_celebracion_del_juego,
+            'listaDeParticipantes': []
+        })
+        return self
+
+    def agregar_participante(
+            self,
+            id_juego: str,
+            nombre_usuario: str,
+            puntos_acumulados: int = 0,
+            puede_ver_deseos_amigo: bool = False,
+            id_amigo: str = '',
+            lista_deseos: list[str] = []):
+        participantes = self.db['Participantes']
+        res = participantes.insert_one(document={
+            "nombreDeUsuario": nombre_usuario,
+            "puntosAcumulados": puntos_acumulados,
+            "puedeVerDeseosDeAmigos": puede_ver_deseos_amigo,
+            "listaDeDeseos": lista_deseos,
+            'id_amigo': id_amigo
+        })
+        juegos = self.db['MisJuegos']
+        juego = juegos.find_one(filter={
+            '_id': id_juego
+        })
+        lista_participantes = juego['listaDeParticipantes']
+        lista_participantes.append(res.inserted_id)
+        juegos.update_one(
+            filter={
+                '_id': id_juego
+            },
+            update={
+                'listaDeParticipantes': lista_participantes
+            }
+        )
+        return self
