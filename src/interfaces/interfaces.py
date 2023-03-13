@@ -1,30 +1,43 @@
 from abc import abstractmethod
 from dataclasses import dataclass
-import datetime
+from datetime import date
+
+
+
+
+@dataclass
+class Participante:
+    id_participante: str
+    nombre_usuario: str
+    puntos_acumulados: int
+    puede_ver_deseos_amigo: bool
+    id_amigo_asignado: str
+    lista_deseos: list[str]
 
 @dataclass
 class Juego:
-    nombre: str
-    fecha_de_inicio: datetime
-    fecha_de_publicacion: datetime
-    fecha_de_vencimiento: datetime
-
+    id_juego: str
+    fecha_limite_para_admitir_participantes: date
+    fecha_de_inicio_del_juego: date
+    fecha_de_celebracion_del_juego: date
+    participantes: list[Participante]
 
 class Repositorio:
     @abstractmethod
-    def dameElJuego(self, id: int) -> Juego:
-        pass
+    def guardar_juego(
+            self,
+            fecha_limite_para_admitir_participantes: date,
+            fecha_de_inicio_del_juego: date,
+            fecha_de_celebracion_del_juego: date):
+        raise NotImplementedError
 
-
-
-class RepositorioFake(Repositorio):
-    def __init__(self):
-        self.juegos = []
-
-    def crearJuego(self, nombre, fecha_de_inicio, fecha_de_publicacion, fecha_de_vencimiento):
-        juego = Juego(nombre, fecha_de_inicio,fecha_de_publicacion, fecha_de_vencimiento)
-        return juego
-
-    def almacenarJuego(self, juego):
-        self.juegos.append(juego)
-        return juego
+    @abstractmethod
+    def agregar_participante(
+            self,
+            id_juego: str,
+            nombre_usuario: str,
+            puntos_acumulados: int = 0,
+            puede_ver_deseos_amigo: bool = False,
+            id_amigo_asignado: str = '',
+            lista_deseos: list[str] = []):
+        raise NotImplementedError

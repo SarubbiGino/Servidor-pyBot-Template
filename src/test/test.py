@@ -1,9 +1,8 @@
+from interfaces.interfaces import Repositorio
+from app.app import App
 import datetime
-from interface import Repositorio, RepositorioFake
-from app import App
 
-
-repositorio = RepositorioFake()
+repositorio = Repositorio()
 nombre = 'Amigo Invisible'
 fecha_de_inicio = datetime.datetime(2022, 1, 1)
 fecha_de_publicacion = datetime.datetime(2022, 2, 1)
